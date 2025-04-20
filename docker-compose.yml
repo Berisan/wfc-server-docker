@@ -1,0 +1,46 @@
+services:
+  wwfc-server-db:
+    container_name: wwfc-server-db
+    image: postgres:17.4-alpine
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: wiilink
+      POSTGRES_PASSWORD: wiilink # Change this!
+      POSTGRES_DB: wwfc
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./wwfc-docker/data/:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wiilink -d wwfc"]
+      interval: 1s
+  
+  wwfc-server:
+    container_name: wwfc-server
+    build:
+      context: .
+      args:
+        WWFC_DOMAIN: ${WWFC_DOMAIN:?Specify the DNS-Name your wwfc-server is hosted at}
+    ports:
+      - 80:80           # nas, sake, gamestats, race, conntest
+      - 29900:29900     # gpcm
+      - 29901:29901     # gpsp
+
+      - 27901:27901     # natneg
+      - 27901:27901/udp # natneg
+
+      - 29920:29920     # gamestats
+
+      - 28910:28910     # serverbrowser
+
+      - 27900:27900     # qr2
+      - 27900:27900/udp # qr2
+
+      - 29998:29998     # frontend-rpc
+      - 29999:29999     # backend-rpc
+    volumes:
+      - ./config.xml:/config.xml
+    depends_on:
+      wwfc-server-db:
+        condition: service_healthy

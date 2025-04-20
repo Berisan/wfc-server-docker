@@ -23,3 +23,6 @@ state
 
 # Editor files
 .vscode
+
+# Local data
+wwfc-docker
