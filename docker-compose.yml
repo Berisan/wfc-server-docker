@@ -18,12 +18,15 @@ services:
   
   wwfc-server:
     container_name: wwfc-server
+    image: wiilink-wfc-server
     build:
       context: .
       args:
         WWFC_DOMAIN: ${WWFC_DOMAIN:?Specify the DNS-Name your wwfc-server is hosted at}
     ports:
       - 80:80           # nas, sake, gamestats, race, conntest
+      - 443:443         # nas-ssl
+
       - 29900:29900     # gpcm
       - 29901:29901     # gpsp
 
@@ -41,6 +44,19 @@ services:
       - 29999:29999     # backend-rpc
     volumes:
       - ./config.xml:/config.xml
+
+      # Uncomment if using HTTPS
+      # - ./wwfc-docker/wwfc-cert.cer:/wwfc-cert.cer
+      # - ./wwfc-docker/wwfc-key.pem:/wwfc-key.pem
+
+      # Uncomment if using DS HTTPS
+      # - ./wwfc-docker/clientca.pem:/clientca.pem
+      # - ./wwfc-docker/nas-cert.der:/nas-cert.der
+      # - ./wwfc-docker/nas-key.pem:/nas-key.pem
+
+      # Uncomment if using Wii HTTPS
+      # - ./wwfc-docker/naswii-cert.cer:/naswii-cert.cer
+      # - ./wwfc-docker/naswii-key.pem:/naswii-key.pem
     depends_on:
       wwfc-server-db:
         condition: service_healthy

@@ -69,16 +69,16 @@ WORKDIR /build/wfc-patcher-wii
 
 ARG WWFC_DOMAIN
 
-RUN ./make.sh --all -- -j8 -DWWFC_DOMAIN=\"${WWFC_DOMAIN}\"
+RUN ./make.sh --all --exploit -- -j$(nproc) -DWWFC_DOMAIN=\"${WWFC_DOMAIN}\"
 
 # Copy everything into a clean image
 FROM scratch AS final
 
 WORKDIR /
 
-COPY --from=wwfc-server /build/wwfc /build/game_list.tsv /build/motd.txt .
-COPY --from=wwfc-patches /build/wfc-patcher-wii/dist/stage1.bin /build/wfc-patcher-wii/dist/private-key.pem ./payload/
-COPY --from=wwfc-patches /build/wfc-patcher-wii/dist/binary/ ./payload/binary/
-COPY --from=wwfc-patches /build/wfc-patcher-wii/patch/build/*.txt ./patches/
+COPY --from=wwfc-server /build/wwfc /build/game_list.tsv /build/motd.txt /
+COPY --from=wwfc-patches /build/wfc-patcher-wii/dist/ /payload/
+COPY --from=wwfc-patches /build/wfc-patcher-wii/exploit/sbcm/ /payload/sbcm/
+COPY --from=wwfc-patches /build/wfc-patcher-wii/patch/build/*.txt /patches/
 
 CMD ["/wwfc"]
